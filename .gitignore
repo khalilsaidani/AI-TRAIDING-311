@@ -1,0 +1,13 @@
+.env
+keys/
+*.json
+!signal.json
+!signals_log.json
+!tg_messages.json
+__pycache__/
+*.pyc
+.venv/
+venv/
+webhook_debug.log
+*.log
+*.csv

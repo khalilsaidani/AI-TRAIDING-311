@@ -1,0 +1,8 @@
+{
+  "secret": "@tradingviewai2026",
+  "symbol": "XAUUSD",
+  "tf": "15m",
+  "signal": "TEST_OK",
+  "price": "4531",
+  "time": "NOW"
+}

@@ -1,0 +1,65 @@
+[
+  {
+    "secret": "@tradingviewai2026",
+    "symbol": "XAUUSD",
+    "tf": "15m",
+    "signal": "TEST_OK",
+    "price": "4531",
+    "time": "NOW",
+    "_ts": "2025-12-28T00:15:37+0100"
+  },
+  {
+    "secret": "@tradingviewai2026",
+    "symbol": "XAUUSD",
+    "tf": "15m",
+    "signal": "TEST_OK",
+    "price": "4531",
+    "time": "NOW",
+    "_ts": "2025-12-28T08:50:28+0100"
+  },
+  {
+    "secret": "@tradingviewai2026",
+    "symbol": "XAUUSD",
+    "tf": "15m",
+    "signal": "TEST_OK",
+    "price": "4531",
+    "time": "NOW",
+    "_ts": "2025-12-28T08:55:50+0100"
+  },
+  {
+    "secret": "@tradingviewai2026",
+    "symbol": "XAUUSD",
+    "tf": "15m",
+    "signal": "TEST_OK",
+    "price": "4531",
+    "time": "NOW",
+    "_ts": "2025-12-28T08:57:55+0100"
+  },
+  {
+    "secret": "@tradingviewai2026",
+    "symbol": "XAUUSD",
+    "tf": "15m",
+    "signal": "TEST_OK",
+    "price": "4531",
+    "time": "NOW",
+    "_ts": "2025-12-28T09:07:54+0100"
+  },
+  {
+    "secret": "@tradingviewai2026",
+    "symbol": "XAUUSD",
+    "tf": "15m",
+    "signal": "TEST_OK",
+    "price": "4531",
+    "time": "NOW",
+    "_ts": "2025-12-28T09:19:03+0100"
+  },
+  {
+    "secret": "@tradingviewai2026",
+    "symbol": "XAUUSD",
+    "tf": "15m",
+    "signal": "TEST_OK",
+    "price": "4531",
+    "time": "NOW",
+    "_ts": "2025-12-28T09:20:47+0100"
+  }
+]

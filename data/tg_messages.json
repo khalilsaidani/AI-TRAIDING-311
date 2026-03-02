@@ -1,0 +1,254 @@
+{
+  "TEST-TG-001": {
+    "message_id": 412
+  },
+  "EURUSD_HTF_PULLBACK_TP3_BUY_1770751860000": {
+    "message_id": 413
+  },
+  "XAUUSD_HTF_5m_15m_TP123_BUY_1770764400000_10449": {
+    "message_id": 414
+  },
+  "XAUUSD_HTF_5m_15m_TP123_BUY_1770751020000_10510": {
+    "message_id": 415
+  },
+  "XAUUSD_H1_5M_15M_TP123_BUY_1770751020000_10510": {
+    "message_id": 416
+  },
+  "XAUUSD_HTF_5m_15m_TP123_SELL_1770767100000_10456": {
+    "message_id": 417
+  },
+  "XAUUSD_LONDON_BREAKOUT_TP123_BUY_1770602520000_12449": {
+    "message_id": 418
+  },
+  "EURUSD_HTF_PULLBACK_TP3_BUY_1770808560000": {
+    "message_id": 419
+  },
+  "XAUUSD_H1_5M_15M_TP123_BUY_1770818520000_10581": {
+    "message_id": 420
+  },
+  "XAUUSD_HTF_5m_15m_TP123_SELL_1770821100000_10516": {
+    "message_id": 422
+  },
+  "EURUSD_HTF_PULLBACK_TP3_BUY_1770826560000": {
+    "message_id": 423
+  },
+  "XAUUSD_H1_5M_15M_TP123_BUY_1770826620000_10590": {
+    "message_id": 424
+  },
+  "XAUUSD_HTF_5m_15m_TP123_BUY_1770826620000_10590": {
+    "message_id": 425
+  },
+  "XAUUSD_HTF_5m_15m_TP123_SELL_1770827400000_10523": {
+    "message_id": 426
+  },
+  "XAUUSD_HTF_5m_15m_TP123_BUY_1770827400000_10519": {
+    "message_id": 428
+  },
+  "XAUUSD_HTF_5m_15m_TP123_BUY_1770831000000_10523": {
+    "message_id": 429
+  },
+  "XAUUSD_HTF_5m_15m_TP123_SELL_1770832800000_10529": {
+    "message_id": 430
+  },
+  "XAUUSD_HTF_5m_15m_TP123_BUY_1770836400000_10529": {
+    "message_id": 431
+  },
+  "EURUSD_HTF_PULLBACK_TP3_BUY_1770879660000": {
+    "message_id": 432
+  },
+  "EURUSD_HTF_PULLBACK_TP3_BUY_1770902160000": {
+    "message_id": 433
+  },
+  "XAUUSD_SOFT_V2_TP123_BUY_1770901320000_12529": {
+    "message_id": 434
+  },
+  "XAUUSD_H1_5M_15M_TP123_BUY_1770908520000_10677": {
+    "message_id": 435
+  },
+  "XAUUSD_HTF_5m_15m_TP123_BUY_1770909300000_10606": {
+    "message_id": 437
+  },
+  "XAUUSD_MEANREV_RANGE_SOFT_TP123_BUY_1770912120000_12532": {
+    "message_id": 440
+  },
+  "XAUUSD_LONDON_BREAKOUT_TP123_SELL_1770912120000_12532": {
+    "message_id": 439
+  },
+  "XAUUSD_LONDON_BREAKOUT_TP123_SELL_1770919320000_12534": {
+    "message_id": 441
+  },
+  "EURUSD_HTF_PULLBACK_TP3_BUY_1770923760000": {
+    "message_id": 442
+  },
+  "XAUUSD_MEANREV_RANGE_SOFT_TP123_BUY_1770922920000_12535": {
+    "message_id": 443
+  },
+  "NASDAQ_15M_FLOW_HF_TP3_SELL_1770937200000_10637": {
+    "message_id": 444
+  },
+  "XAUUSD_HTF_5m_15m_TP123_BUY_1770941820000_10710": {
+    "message_id": 445
+  },
+  "XAUUSD_HTF_5m_15m_TP123_SELL_1770946200000_10647": {
+    "message_id": 446
+  },
+  "NASDAQ_15M_FLOW_HF_TP3_SELL_1770946200000_10647": {
+    "message_id": 447
+  },
+  "XAUUSD_LONDON_BREAKOUT_TP123_SELL_1770948120000_12541": {
+    "message_id": 448
+  },
+  "EURUSD_HTF_PULLBACK_TP3_BUY_1770968760000": {
+    "message_id": 450
+  },
+  "EURUSD_HTF_PULLBACK_TP3_BUY_1770971460000": {
+    "message_id": 451
+  },
+  "EURUSD_HTF_PULLBACK_TP3_BUY_1770980460000": {
+    "message_id": 452
+  },
+  "NASDAQ_15M_FLOW_HF_TP3_SELL_1770993900000_10700": {
+    "message_id": 454
+  },
+  "XAUUSD_HTF_5m_15m_TP123_SELL_1770993900000_10700": {
+    "message_id": 456
+  },
+  "XAUUSD_SOFT_V2_TP123_BUY_1770998520000_12555": {
+    "message_id": 457
+  },
+  "XAUUSD_LONDON_BREAKOUT_TP123_BUY_1771002120000_12556": {
+    "message_id": 458
+  },
+  "EURUSD_HTF_PULLBACK_TP3_BUY_1771010160000": {
+    "message_id": 459
+  },
+  "XAUUSD_HTF_5m_15m_TP123_BUY_1771013820000_10790": {
+    "message_id": 460
+  },
+  "XAUUSD_H1_5M_15M_TP123_BUY_1771196520000_10797": {
+    "message_id": 461
+  },
+  "XAUUSD_HTF_5m_15m_TP123_SELL_1771197300000_10730": {
+    "message_id": 462
+  },
+  "XAUUSD_H1_5M_15M_TP123_BUY_1771203720000_10805": {
+    "message_id": 463
+  },
+  "XAUUSD_HTF_5m_15m_TP123_BUY_1771203720000_10805": {
+    "message_id": 464
+  },
+  "EURUSD_HTF_PULLBACK_TP3_BUY_1771204560000": {
+    "message_id": 465
+  },
+  "EURUSD_HTF_PULLBACK_TP3_BUY_1771230660000": {
+    "message_id": 466
+  },
+  "EURUSD_HTF_PULLBACK_TP3_BUY_1771235160000": {
+    "message_id": 467
+  },
+  "EURUSD_HTF_PULLBACK_TP3_BUY_1771250460000": {
+    "message_id": 468
+  },
+  "EURUSD_HTF_PULLBACK_TP3_BUY_1771257660000": {
+    "message_id": 469
+  },
+  "XAUUSD_H1_5M_15M_TP123_BUY_1771258620000_10866": {
+    "message_id": 471
+  },
+  "XAUUSD_HTF_5m_15m_TP123_BUY_1771260420000_10868": {
+    "message_id": 472
+  },
+  "XAUUSD_H1_5M_15M_TP123_BUY_1771260420000_10868": {
+    "message_id": 473
+  },
+  "NASDAQ_15M_FLOW_HF_TP3_SELL_1771263900000_10804": {
+    "message_id": 475
+  },
+  "EURUSD_HTF_PULLBACK_TP3_BUY_1771268460000": {
+    "message_id": 476
+  },
+  "EURUSD_HTF_PULLBACK_TP3_BUY_1771285560000": {
+    "message_id": 477
+  },
+  "XAUUSD_MEANREV_RANGE_SOFT_TP123_BUY_1771286520000_12583": {
+    "message_id": 479
+  },
+  "XAUUSD_LONDON_BREAKOUT_TP123_SELL_1771286520000_12583": {
+    "message_id": 480
+  },
+  "XAUUSD_LONDON_BREAKOUT_TP123_SELL_1771333320000_12596": {
+    "message_id": 481
+  },
+  "XAUUSD_HTF_5m_15m_TP123_SELL_1771349400000_10879": {
+    "message_id": 483
+  },
+  "XAUUSD_H1_5M_15M_TP123_SELL_1771355820000_10960": {
+    "message_id": 484
+  },
+  "XAUUSD_HTF_5m_15m_TP123_SELL_1771370100000_10898": {
+    "message_id": 485
+  },
+  "XAUUSD_LONDON_BREAKOUT_TP123_BUY_1771419720000_12619": {
+    "message_id": 486
+  },
+  "XAUUSD_MEANREV_RANGE_SOFT_TP123_SELL_1771423320000_12620": {
+    "message_id": 488
+  },
+  "XAUUSD_LONDON_BREAKOUT_TP123_BUY_1771430520000_12622": {
+    "message_id": 489
+  },
+  "XAUUSD_HTF_5m_15m_TP123_SELL_1771439400000_10975": {
+    "message_id": 490
+  },
+  "XAUUSD_HTF_5m_15m_TP123_SELL_1771447500000_10984": {
+    "message_id": 491
+  },
+  "XAUUSD_LONDON_BREAKOUT_TP123_BUY_1771444920000_12626": {
+    "message_id": 492
+  },
+  "XAUUSD_H1_5M_15M_TP123_SELL_1771448520000_11059": {
+    "message_id": 493
+  },
+  "177152052000011135": {
+    "message_id": 494
+  },
+  "177152220000011063": {
+    "message_id": 495
+  },
+  "177142332000012620": {
+    "message_id": 496
+  },
+  "177159522000011214": {
+    "message_id": 498
+  },
+  "177159702000011216": {
+    "message_id": 501
+  },
+  "177159882000011218": {
+    "message_id": 503
+  },
+  "177159612000012666": {
+    "message_id": 505
+  },
+  "177160152000011221": {
+    "message_id": 509
+  },
+  "177160512000011225": {
+    "message_id": 511
+  },
+  "177160692000012669": {
+    "message_id": 512
+  },
+  "177161130000011158": {
+    "message_id": 513
+  },
+  "177161862000011240": {
+    "message_id": 514
+  },
+  "177162132000011243": {
+    "message_id": 515
+  },
+  "177162132000012673": {
+    "message_id": 516
+  }
+}

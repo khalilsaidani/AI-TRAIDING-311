@@ -82,10 +82,23 @@ def position_size(account_balance: float, entry: float, sl: float, risk_per_trad
 # =========================
 # Core signal logic
 # =========================
-def generate_signal(row: pd.Series, cfg: EntryConfig) -> Dict[str, Any]:
+def generate_signal(
+    row: pd.Series,
+    cfg: EntryConfig,
+    mtf_context: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
     """
     تولّد إشارة على شمعة واحدة (no look-ahead).
     ترجع dict فيه signal + تفاصيل الدخول/SL/TP + debug flags.
+
+    mtf_context (optional)
+    ----------------------
+    When provided, adds M15 confirmation gate on top of the existing H1 filter.
+    Expected keys (all optional; missing/NaN values skip that sub-filter):
+      rsi_m15            : float — M15 RSI-14
+      supertrend_dir_m15 : int   — M15 SuperTrend direction (+1 / -1)
+
+    Backward compatible: pass mtf_context=None (default) for the original behavior.
     """
 
     time = safe_get(row, "time", safe_get(row, "timestamp", ""))
@@ -125,9 +138,28 @@ def generate_signal(row: pd.Series, cfg: EntryConfig) -> Dict[str, Any]:
         supertrend_buy_ok = (supertrend_dir == cfg.supertrend_buy_dir)
         supertrend_sell_ok = (supertrend_dir == cfg.supertrend_sell_dir)
 
-    # قواعد الدخول (Day Trading H1)
-    buy_ok = trend_up_h1 and price_above_ema200 and momentum_buy_ok and supertrend_buy_ok
-    sell_ok = trend_down_h1 and price_below_ema200 and momentum_sell_ok and supertrend_sell_ok
+    # M15 confirmation gate (only active when mtf_context is provided)
+    mtf_m15_ok: Optional[bool] = None
+    if mtf_context is not None:
+        rsi_m15    = mtf_context.get("rsi_m15")
+        st_dir_m15 = mtf_context.get("supertrend_dir_m15")
+
+        rsi_ok_buy  = (rsi_m15 is not None and _is_valid_number(rsi_m15) and rsi_m15 > 50)
+        rsi_ok_sell = (rsi_m15 is not None and _is_valid_number(rsi_m15) and rsi_m15 < 50)
+        st_ok_buy   = (st_dir_m15 is not None and st_dir_m15 == 1)
+        st_ok_sell  = (st_dir_m15 is not None and st_dir_m15 == -1)
+
+        # If no M15 data at all, skip filter (don't block on missing data)
+        has_m15_data = (rsi_m15 is not None and _is_valid_number(rsi_m15)) or st_dir_m15 is not None
+        mtf_buy_ok  = (rsi_ok_buy  or st_ok_buy)  if has_m15_data else True
+        mtf_sell_ok = (rsi_ok_sell or st_ok_sell) if has_m15_data else True
+    else:
+        mtf_buy_ok  = True
+        mtf_sell_ok = True
+
+    # قواعد الدخول (Day Trading H1) + optional M15 gate
+    buy_ok  = trend_up_h1   and price_above_ema200 and momentum_buy_ok  and supertrend_buy_ok  and mtf_buy_ok
+    sell_ok = trend_down_h1 and price_below_ema200 and momentum_sell_ok and supertrend_sell_ok and mtf_sell_ok
 
     signal = "NO_TRADE"
     side = None
@@ -135,9 +167,13 @@ def generate_signal(row: pd.Series, cfg: EntryConfig) -> Dict[str, Any]:
     if buy_ok and not sell_ok:
         signal = "BUY"
         side = "BUY"
+        if mtf_context is not None:
+            mtf_m15_ok = mtf_buy_ok
     elif sell_ok and not buy_ok:
         signal = "SELL"
         side = "SELL"
+        if mtf_context is not None:
+            mtf_m15_ok = mtf_sell_ok
 
     entry = float(close) if _is_valid_number(close) else None
     sl, tp = (None, None)
@@ -161,6 +197,7 @@ def generate_signal(row: pd.Series, cfg: EntryConfig) -> Dict[str, Any]:
         "supertrend_sell_ok": supertrend_sell_ok,
         "momentum_buy_ok": momentum_buy_ok,
         "momentum_sell_ok": momentum_sell_ok,
+        "mtf_m15_ok": mtf_m15_ok,
         "BUY_OK": buy_ok,
         "SELL_OK": sell_ok,
         "signal": signal,

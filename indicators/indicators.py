@@ -141,13 +141,22 @@ def _add_candles(df: pd.DataFrame) -> pd.DataFrame:
 # =========================
 # Public API
 # =========================
-def add_indicators(df: pd.DataFrame) -> pd.DataFrame:
+def add_indicators(
+    df: pd.DataFrame,
+    *,
+    ema_fast: int = 50,
+    ema_slow: int = 200,
+    rsi_period: int = 14,
+    atr_period: int = 14,
+) -> pd.DataFrame:
     """
     Expected columns: time, open, high, low, close, volume (volume optional)
     Adds:
       ema_50, ema_200, rsi_14, atr_14, macd, macd_signal, macd_hist
       supertrend, supertrend_dir
       bull_engulf, bear_engulf, bull_pin, bear_pin
+
+    Optional kwargs override default indicator periods (column names stay fixed).
     """
     out = df.copy()
 
@@ -155,10 +164,10 @@ def add_indicators(df: pd.DataFrame) -> pd.DataFrame:
     out.columns = [str(c).lower().strip() for c in out.columns]
 
     # indicators
-    out["ema_50"] = _ema(out["close"], 50)
-    out["ema_200"] = _ema(out["close"], 200)
-    out["rsi_14"] = _rsi(out["close"], 14)
-    out["atr_14"] = _atr(out, 14)
+    out["ema_50"] = _ema(out["close"], ema_fast)
+    out["ema_200"] = _ema(out["close"], ema_slow)
+    out["rsi_14"] = _rsi(out["close"], rsi_period)
+    out["atr_14"] = _atr(out, atr_period)
 
     macd, macd_signal, macd_hist = _macd(out["close"], 12, 26, 9)
     out["macd"] = macd

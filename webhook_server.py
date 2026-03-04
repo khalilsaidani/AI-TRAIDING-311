@@ -51,6 +51,9 @@ FORCE_DECIMALS = int((os.getenv("FORCE_DECIMALS") or "5").strip())
 LOCAL_TZ_NAME = (os.getenv("LOCAL_TZ") or "Europe/Zurich").strip()
 LOCAL_TZ = ZoneInfo(LOCAL_TZ_NAME)
 
+MTF_ENABLED = os.getenv("MTF_ENABLED", "0").strip() == "1"
+MTF_DATA_DIR = os.getenv("MTF_DATA_DIR", "data/").strip()
+
 
 # -----------------------------
 # Helpers
@@ -204,6 +207,25 @@ async def tv_webhook(request: Request):
         "rr": rr,
     }
 
+    # ── MTF analysis (optional, ENTRY only, non-fatal) ────────────────────────
+    mtf_decision: Any = None
+    if MTF_ENABLED and event == "ENTRY":
+        try:
+            from analyzer_mtf import analyze_mtf
+            mtf_decision = analyze_mtf(
+                cleaned.get("symbol", ""),
+                data_dir=MTF_DATA_DIR,
+            )
+            cleaned["mtf_decision"] = mtf_decision
+            logger.info(
+                "tv_webhook: MTF signal=%s bias=%s confidence=%s",
+                mtf_decision.get("signal"),
+                mtf_decision.get("bias"),
+                mtf_decision.get("confidence"),
+            )
+        except Exception:
+            logger.exception("tv_webhook: analyze_mtf failed (non-fatal, continuing)")
+
     # ✅ اكتب في Sheets (إجباري)
     sheets_ok = False
     sheets_res: Any = None
@@ -243,4 +265,5 @@ async def tv_webhook(request: Request):
         "sheets_res": sheets_res,
         "telegram_ok": telegram_ok,
         "telegram_error": telegram_error,
+        "mtf_decision": mtf_decision,
     }

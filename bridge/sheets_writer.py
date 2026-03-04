@@ -162,3 +162,7 @@ def upsert_trade(payload: dict):
     except Exception:
         logger.exception("upsert_trade: FAILED (full traceback below)")
         raise
+
+
+# Alias kept for backwards compatibility with older test scripts
+write_to_sheets = upsert_trade

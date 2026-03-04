@@ -82,6 +82,41 @@ def send_telegram(payload: dict) -> dict:
     if time_str:
         lines.append(f"⏰Time: {time_str}")
 
+    # ── MTF analysis section (optional) ──────────────────────────────────────
+    mtf = payload.get("mtf_decision")
+    if mtf and isinstance(mtf, dict) and mtf.get("signal") not in (None, "NO_DATA"):
+        mtf_signal     = _norm(mtf.get("signal"))
+        mtf_bias       = _norm(mtf.get("bias"))
+        mtf_confidence = mtf.get("confidence", 0)
+        snap           = mtf.get("indicators_snapshot", {}) or {}
+        ema200_h1      = snap.get("ema200_h1")
+        rsi_m15        = snap.get("rsi_m15")
+        st_m15         = snap.get("supertrend_dir_m15")
+
+        h1_line  = f"H1: {mtf_bias}"
+        if ema200_h1 is not None:
+            try:
+                h1_line += f" (EMA200={float(ema200_h1):.2f})"
+            except Exception:
+                pass
+
+        m15_parts = []
+        if rsi_m15 is not None:
+            try:
+                m15_parts.append(f"RSI={float(rsi_m15):.1f}")
+            except Exception:
+                pass
+        if st_m15 is not None:
+            m15_parts.append(f"ST={'+1' if st_m15 == 1 else '-1'}")
+        m15_line = "M15: " + (" ".join(m15_parts) if m15_parts else "n/a")
+
+        lines.append("")
+        lines.append("─────────────────")
+        lines.append(f"📊 MTF (3-TF Analysis):")
+        lines.append(f"  {h1_line}")
+        lines.append(f"  {m15_line}")
+        lines.append(f"  M5 → {mtf_signal}  Confidence: {mtf_confidence}%")
+
     text = "\n".join([x for x in lines if x is not None]).strip()
 
     url = f"https://api.telegram.org/bot{token}/sendMessage"

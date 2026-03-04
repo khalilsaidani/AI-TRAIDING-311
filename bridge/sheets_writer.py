@@ -1,4 +1,5 @@
 # bridge/sheets_writer.py
+import logging
 import os
 from datetime import datetime, timezone
 from typing import Optional
@@ -7,6 +8,8 @@ import gspread
 from google.oauth2.service_account import Credentials
 from zoneinfo import ZoneInfo
 
+logger = logging.getLogger(__name__)
+
 EXPECTED_HEADERS = [
     "event","trade_id","symbol","tf","signal","entry","sl","tp1","tp2","tp3","rr",
     "strategy","server_time","tp1_hit_time","tp2_hit_time","tp3_hit_time","sl_hit_time","last_update"
@@ -14,11 +17,14 @@ EXPECTED_HEADERS = [
 
 LOCAL_TZ = ZoneInfo((os.getenv("LOCAL_TZ") or "Europe/Zurich").strip())
 
+
 def _env(name: str, required=True) -> str:
     v = os.getenv(name, "").strip()
     if required and not v:
+        logger.error("Missing required env var: %s", name)
         raise RuntimeError(f"Missing env var: {name}")
     return v
+
 
 def _parse_dt_any(s: object) -> Optional[datetime]:
     s = (str(s).strip() if s is not None else "")
@@ -36,27 +42,40 @@ def _parse_dt_any(s: object) -> Optional[datetime]:
         dt = dt.replace(tzinfo=LOCAL_TZ)
     return dt.astimezone(LOCAL_TZ)
 
+
 def _now_local() -> datetime:
     return datetime.now(timezone.utc).astimezone(LOCAL_TZ).replace(microsecond=0)
+
 
 def _fmt_full(dt: datetime) -> str:
     return dt.strftime("%Y-%m-%d %H:%M:%S")
 
+
 def _fmt_hhmm(dt: datetime) -> str:
     return dt.strftime("%H:%M")
 
+
 def _get_client():
     creds_path = _env("GOOGLE_CREDS_FILE")
+    logger.debug("_get_client: GOOGLE_CREDS_FILE=%s  exists=%s", creds_path, os.path.exists(creds_path))  # path is safe to log
     scopes = ["https://www.googleapis.com/auth/spreadsheets"]
     creds = Credentials.from_service_account_file(creds_path, scopes=scopes)
-    return gspread.authorize(creds)
+    gc = gspread.authorize(creds)
+    logger.debug("_get_client: gspread.authorize() OK")
+    return gc
+
 
 def _get_ws():
     gc = _get_client()
     sid = _env("SPREADSHEET_ID")
     sheet_name = _env("SHEET_NAME")
+    logger.debug("_get_ws: SPREADSHEET_ID=...%s  SHEET_NAME=%s", sid[-6:], sheet_name)
     sh = gc.open_by_key(sid)
-    return sh.worksheet(sheet_name)
+    logger.debug("_get_ws: open_by_key() OK  title=%s", sh.title)
+    ws = sh.worksheet(sheet_name)
+    logger.debug("_get_ws: worksheet() OK  id=%s", ws.id)
+    return ws
+
 
 def _ensure_headers(ws):
     row1 = ws.row_values(1)
@@ -65,8 +84,10 @@ def _ensure_headers(ws):
         return EXPECTED_HEADERS
     return row1
 
+
 def _col_map(headers):
     return {h: i+1 for i, h in enumerate(headers)}
+
 
 def _find_row_by_trade_id(ws, trade_id: str, trade_col_idx: int):
     col_vals = ws.col_values(trade_col_idx)
@@ -74,6 +95,7 @@ def _find_row_by_trade_id(ws, trade_id: str, trade_col_idx: int):
         if str(val).strip() == str(trade_id).strip():
             return r
     return None
+
 
 def _set_cells(ws, row_idx: int, updates: dict, cmap: dict):
     cells = []
@@ -84,49 +106,59 @@ def _set_cells(ws, row_idx: int, updates: dict, cmap: dict):
     if cells:
         ws.update_cells(cells, value_input_option="RAW")
 
+
 def upsert_trade(payload: dict):
-    ws = _get_ws()
-    headers = _ensure_headers(ws)
-    cmap = _col_map(headers)
+    logger.debug("upsert_trade: called event=%s trade_id=%s", payload.get("event"), payload.get("trade_id"))
+    try:
+        ws = _get_ws()
+        headers = _ensure_headers(ws)
+        cmap = _col_map(headers)
 
-    trade_id = str(payload.get("trade_id", "")).strip()
-    if not trade_id:
-        raise RuntimeError("Missing trade_id in payload")
+        trade_id = str(payload.get("trade_id", "")).strip()
+        if not trade_id:
+            raise RuntimeError("Missing trade_id in payload")
 
-    event = str(payload.get("event", "")).strip().upper()
+        event = str(payload.get("event", "")).strip().upper()
 
-    server_dt = _parse_dt_any(payload.get("server_time")) or _parse_dt_any(payload.get("time")) or _now_local()
-    server_time_full = _fmt_full(server_dt)
-    hhmm = _fmt_hhmm(server_dt)
+        server_dt = _parse_dt_any(payload.get("server_time")) or _parse_dt_any(payload.get("time")) or _now_local()
+        server_time_full = _fmt_full(server_dt)
+        hhmm = _fmt_hhmm(server_dt)
 
-    row_idx = _find_row_by_trade_id(ws, trade_id, cmap["trade_id"])
+        row_idx = _find_row_by_trade_id(ws, trade_id, cmap["trade_id"])
+        logger.debug("upsert_trade: event=%s trade_id=%s existing_row=%s", event, trade_id, row_idx)
 
-    updates = {
-        "event": event,
-        "trade_id": trade_id,
-        "server_time": server_time_full,
-        "last_update": hhmm,
-    }
+        updates = {
+            "event": event,
+            "trade_id": trade_id,
+            "server_time": server_time_full,
+            "last_update": hhmm,
+        }
 
-    if event == "ENTRY":
-        for k in ["symbol","tf","signal","entry","sl","tp1","tp2","tp3","rr","strategy"]:
-            if k in payload:
-                updates[k] = payload.get(k, "")
+        if event == "ENTRY":
+            for k in ["symbol","tf","signal","entry","sl","tp1","tp2","tp3","rr","strategy"]:
+                if k in payload:
+                    updates[k] = payload.get(k, "")
 
-    if event in ("TP1","TP2","TP3","SL"):
-        hit_col = {"TP1":"tp1_hit_time","TP2":"tp2_hit_time","TP3":"tp3_hit_time","SL":"sl_hit_time"}[event]
-        updates[hit_col] = f"{event} {hhmm}"
-        for k in ["rr","strategy"]:
-            if payload.get(k) not in ("", None):
-                updates[k] = payload.get(k)
+        if event in ("TP1","TP2","TP3","SL"):
+            hit_col = {"TP1":"tp1_hit_time","TP2":"tp2_hit_time","TP3":"tp3_hit_time","SL":"sl_hit_time"}[event]
+            updates[hit_col] = f"{event} {hhmm}"
+            for k in ["rr","strategy"]:
+                if payload.get(k) not in ("", None):
+                    updates[k] = payload.get(k)
 
-    if row_idx is None:
-        row = [""] * len(EXPECTED_HEADERS)
-        for h, v in updates.items():
-            if h in cmap:
-                row[cmap[h]-1] = "" if v is None else str(v)
-        ws.append_row(row, value_input_option="RAW")
-        return {"ok": True, "action": "append", "trade_id": trade_id}
+        if row_idx is None:
+            row = [""] * len(EXPECTED_HEADERS)
+            for h, v in updates.items():
+                if h in cmap:
+                    row[cmap[h]-1] = "" if v is None else str(v)
+            ws.append_row(row, value_input_option="RAW")
+            logger.info("upsert_trade: appended trade_id=%s event=%s", trade_id, event)
+            return {"ok": True, "action": "append", "trade_id": trade_id}
 
-    _set_cells(ws, row_idx, updates, cmap)
-    return {"ok": True, "action": "update", "trade_id": trade_id, "row": row_idx}
+        _set_cells(ws, row_idx, updates, cmap)
+        logger.info("upsert_trade: updated row=%s trade_id=%s event=%s", row_idx, trade_id, event)
+        return {"ok": True, "action": "update", "trade_id": trade_id, "row": row_idx}
+
+    except Exception:
+        logger.exception("upsert_trade: FAILED (full traceback below)")
+        raise

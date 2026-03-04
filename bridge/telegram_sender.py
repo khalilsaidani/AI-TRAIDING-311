@@ -95,5 +95,6 @@ def send_telegram(payload: dict) -> dict:
         timeout=20,
     )
     if not r.ok:
-        raise RuntimeError(f"Telegram error: {r.status_code} {r.text}")
+        # Only log status code — do not include token or response body (may echo chat_id)
+        raise RuntimeError(f"Telegram sendMessage failed: HTTP {r.status_code}")
     return {"ok": True}

@@ -1,8 +1,19 @@
 # webhook_server.py
 import os
 import time
+from collections import defaultdict, deque
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional
+import logging
+
+logging.basicConfig(
+    level=logging.DEBUG if os.getenv("DEBUG_MODE", "0").strip() == "1" else logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+)
+# Silence noisy third-party loggers
+for _noisy in ("urllib3", "google", "googleapiclient", "gspread"):
+    logging.getLogger(_noisy).setLevel(logging.WARNING)
+logger = logging.getLogger(__name__)
 
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
@@ -16,6 +27,20 @@ from bridge.telegram_sender import send_telegram
 load_dotenv()
 
 app = FastAPI()
+
+MAX_BODY_BYTES = 50 * 1024          # 50 KB hard limit on incoming payload
+RATE_LIMIT_RPM = 30                 # max requests per minute per IP
+_rate_buckets: dict = defaultdict(deque)
+
+def _check_rate(ip: str) -> bool:
+    now = time.monotonic()
+    dq = _rate_buckets[ip]
+    while dq and now - dq[0] > 60:
+        dq.popleft()
+    if len(dq) >= RATE_LIMIT_RPM:
+        return False
+    dq.append(now)
+    return True
 
 APP_NAME = os.getenv("APP_NAME", "ai-trading-311-webhook").strip()
 DEBUG_MODE = os.getenv("DEBUG_MODE", "0").strip() == "1"
@@ -107,8 +132,19 @@ def health():
 
 @app.post("/tv-webhook")
 async def tv_webhook(request: Request):
+    client_ip = request.client.host if request.client else "unknown"
+
+    if not _check_rate(client_ip):
+        logger.warning("tv_webhook: rate limit exceeded ip=%s", client_ip)
+        return JSONResponse(status_code=429, content={"ok": False, "error": "rate_limited"})
+
+    body = await request.body()
+    if len(body) > MAX_BODY_BYTES:
+        return JSONResponse(status_code=413, content={"ok": False, "error": "payload_too_large"})
+
     try:
-        payload = await request.json()
+        import json as _json
+        payload = _json.loads(body)
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid JSON")
 
@@ -116,16 +152,26 @@ async def tv_webhook(request: Request):
         raise HTTPException(status_code=500, detail="Server misconfigured: WEBHOOK_SECRET missing")
 
     secret = _get_secret(payload, request)
+    logger.debug(
+        "tv_webhook: secret check — provided=%s len_provided=%d len_expected=%d",
+        bool(secret), len(secret), len(WEBHOOK_SECRET),
+    )
     if secret != WEBHOOK_SECRET:
         return JSONResponse(status_code=401, content={"ok": False, "error": "bad secret"})
+
+    VALID_EVENTS = {"ENTRY", "TP1", "TP2", "TP3", "SL"}
 
     event = _norm(payload.get("event")).upper()
     trade_id = _norm(payload.get("trade_id"))
 
     if not event:
         raise HTTPException(status_code=400, detail="Missing event")
+    if event not in VALID_EVENTS:
+        raise HTTPException(status_code=400, detail=f"Invalid event '{event}'. Must be one of: {sorted(VALID_EVENTS)}")
     if not trade_id:
         raise HTTPException(status_code=400, detail="Missing trade_id")
+    if event == "ENTRY" and not _norm(payload.get("symbol")):
+        raise HTTPException(status_code=400, detail="ENTRY event requires 'symbol'")
 
     # --- time normalize ---
     server_dt = _parse_dt_any(payload.get("server_time")) or _parse_dt_any(payload.get("time")) or _now_local()
@@ -162,10 +208,12 @@ async def tv_webhook(request: Request):
     sheets_ok = False
     sheets_res: Any = None
     try:
+        logger.debug("tv_webhook: calling upsert_trade event=%s trade_id=%s", event, trade_id)
         sheets_res = upsert_trade(cleaned)
         sheets_ok = True
+        logger.debug("tv_webhook: upsert_trade OK res=%s", sheets_res)
     except Exception as e:
-        # لو Sheets طاحت، نرجع error واضح
+        logger.exception("tv_webhook: upsert_trade FAILED event=%s trade_id=%s error=%s", event, trade_id, e)
         return JSONResponse(
             status_code=500,
             content={
